@@ -5,7 +5,7 @@ Welcome to Muddoc!
 especially for native `solidity <https://docs.soliditylang.org/en/latest/>`_ developers. We think that `mud's official documentation <https://mud.dev/introduction>`_
 is not particularly friendly to native solidity developers, so we decided to write this documentation.
 
-Check out the :doc:`/basics/001_introduction_to_mud_framework` section for a introduction and examples of mud, including
+Check out the :doc:`/basics/001_introduction_to_mud_framework` section for an introduction and examples of mud, including
 how to :ref:`installation` the mud.
 
 .. note::

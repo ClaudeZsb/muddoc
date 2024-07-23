@@ -3,8 +3,8 @@
 # -- Project information
 
 project = 'Muddoc'
-copyright = '2021, Graziella'
-author = 'Graziella'
+copyright = '2024, Sanbao'
+author = 'Sanbao'
 
 release = '0.1'
 version = '0.1.0'
@@ -15,7 +15,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    # 'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
 ]
 
