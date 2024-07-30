@@ -67,7 +67,8 @@ The table configuration items are as follows:
 
     Each table can have up to **28** fields excluding the primary key, with a
     maximum of **5** :ref:`reference type <field-supported-types>` fields.
-    When defining, reference type fields must be placed at the end.
+
+    **When defining, reference type fields must be placed at the end.**
 
 - ``key``: ``string[]``, the table's primary key, can be an array of one or
   more fields. It can also be an empty array, indicating a singleton table.
@@ -85,8 +86,8 @@ The table configuration items are as follows:
 - ``codegen``: ``object`` (optional), 3.
 
   - ``outputDirectory``: ``string``, default: ``"tables"``. Output directory
-    for code generation, by default in ``src/tables`` under the configuration
-    file directory.
+    for code generation, by default in ``src/codegen/tables`` under the
+    configuration file directory.
   - ``tableIdArgument``: ``boolean``, default: ``false``. Whether to generate
     ``tableId`` parameter for read and write methods.
   - ``storeArgument``: ``boolean``, default: ``false``. Whether to generate
@@ -113,26 +114,27 @@ The table configuration items are as follows:
 Supported Table Field Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-+------------------+--------------------------------------------------+
-| Type             |                                                  |
-+==================+==================================================+
-|| Value Types     || ``uint8`` ~ ``uint256``, ``int8`` ~ ``int256``, |
-||                 || ``address``, ``bool``, ``bytes1`` ~ ``bytes32`` |
-||                 || ``enum``                                        |
-+------------------+--------------------------------------------------+
-|| Reference Types || Fixed-length or dynamic arrays of value types,  |
-||                 || ``string``, ``bytes``                           |
-+------------------+--------------------------------------------------+
-| Custom Types     | Aliases for value types / reference types        |
-+------------------+--------------------------------------------------+
-| ``mapping``      | ❌                                               |
-+------------------+--------------------------------------------------+
-| ``string[]``     | ❌                                               |
-+------------------+--------------------------------------------------+
-| ``bytes[]``      | ❌                                               |
-+------------------+--------------------------------------------------+
-| ``struct``       | ❌                                               |
-+------------------+--------------------------------------------------+
++--------------------+--------------------------------------------------+
+| Type               |                                                  |
++====================+==================================================+
+|| Value Types       || ``uint8`` ~ ``uint256``, ``int8`` ~ ``int256``, |
+||                   || ``address``, ``bool``, ``bytes1`` ~ ``bytes32`` |
++--------------------+--------------------------------------------------+
+|| Reference Types   || Fixed-length or dynamic arrays of value types,  |
+||                   || ``string``, ``bytes``                           |
++--------------------+--------------------------------------------------+
+| Enums              | ✅                                               |
++--------------------+--------------------------------------------------+
+| User-defined Types | ✅                                               |
++--------------------+--------------------------------------------------+
+| ``mapping``        | ❌                                               |
++--------------------+--------------------------------------------------+
+| ``string[]``       | ❌                                               |
++--------------------+--------------------------------------------------+
+| ``bytes[]``        | ❌                                               |
++--------------------+--------------------------------------------------+
+| ``struct``         | ❌                                               |
++--------------------+--------------------------------------------------+
 
 .. important::
 
@@ -150,6 +152,93 @@ Supported Table Field Types
 
   The single row in each singleton table can be viewed as a piece of data of
   ``struct`` type.
+
+Enums
+"""""""""""""""""
+
+We can define enums in the configuration file and use them in table fields.
+
+.. code-block:: ts
+
+  import { defineWorld } from "@latticexyz/world";
+
+  export default defineWorld({
+    namespace: "muddoc",
+    enums: {
+      UserStatus: ["active", "inactive"],
+    },
+    tables: {
+      UserStates: {
+        schema: {
+          addr: "address",
+          status: "UserStatus",
+        },
+        key: ["addr"],
+      },
+    }
+  });
+
+Each key-value pair in ``enums`` defines an enum. The key determines the
+name of the enum, and the value is an array of strings containing all
+enum member names.
+
+All enums are generated and stored in ``src/common.sol`` by
+``CLI: mud tablegen``.
+
+User-defined Types
+""""""""""""""""""
+
+In the configuration file, we can import user-defined types via file paths and
+use these imported user-defined types in table fields.
+
+User-defined types need to be prepared in advance. ``CLI: mud tablegen``
+automatically generates corresponding imports for the table code library based
+on the import paths in the configuration file.
+
+These user-defined types can come from either the current project or third-
+party libraries.
+
+.. code-block:: ts
+
+  import { defineWorld } from "@latticexyz/world";
+
+  export default defineWorld({
+    namespace: "muddoc",
+    userTypes: {
+      MyUint256: {
+        type: "uint256",
+        filePath: "./src/utils/MyUint256s.sol",
+      },
+      ShortString: {
+        type: "bytes32",
+        filePath: "@openzeppelin/contracts/utils/ShortStrings.sol",
+      }
+    },
+    tables: {
+      UserStates: {
+        schema: {
+          addr: "address",
+          data: "MyUint256",
+          label: "ShortString",
+        },
+        key: ["addr"],
+      },
+    }
+  });
+
+``./src/utils/MyUint256s.sol`` is a relative path with respect to the
+configuration file. Its content is roughly as follows:
+
+.. code-block:: solidity
+
+  // SPDX-License-Identifier: MIT
+  pragma solidity >=0.8.24;
+
+  type MyUint256 is uint256;
+
+  library MyUint256s {
+    // MyUint256 utils
+  }
 
 Table Definition Shorthand
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -264,7 +353,7 @@ Internal CRUD Methods
 
 When examining a table's library, you'll notice each CRUD method has a
 similar counterpart with a different name. These methods start with ``_``,
-like ``_register()``, conventionally indicating internal methods. 
+like ``_register()``, conventionally indicating internal methods.
 **Here, internal methods refer to those that, compared to the methods
 mentioned above, can only be used within the context of the autonomous
 world's main contract.**
