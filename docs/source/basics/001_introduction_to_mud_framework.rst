@@ -1,3 +1,5 @@
+.. _brief-introduction:
+
 Introduction to mud framework
 =============================
 

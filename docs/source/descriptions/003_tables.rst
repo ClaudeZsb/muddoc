@@ -47,17 +47,6 @@ Here, ``7462`` is the hexadecimal form of ``tb``,
 `online conversion tool <https://www.rapidtables.com/convert/number/ascii-to-hex.html>`_.
 ``6d7564646f63`` represents ``muddoc``, and ``5573657273`` represents ``Users``.
 
-.. note::
-
-  ``ResourceId`` is a ``bytes32`` data type, concatenated from three
-  fixed-length string byte arrays.
-  The first string, of length **2**, indicates the resource type, including
-  on-chain table ``tb``, off-chain table ``ot``, system ``sy``, namespace
-  ``ns``.
-  The second string, of length **14**, represents the name of the namespace where
-  the resource is located.
-  The third string, of length **16**, represents the name of the resource.
-
 The table configuration items are as follows:
 
 - ``schema``: ``object``, field definition of the table, key-value pairs of
@@ -182,7 +171,7 @@ Each key-value pair in ``enums`` defines an enum. The key determines the
 name of the enum, and the value is an array of strings containing all
 enum member names.
 
-All enums are generated and stored in ``src/common.sol`` by
+All enums are generated and stored in ``src/codegen/common.sol`` by
 ``CLI: mud tablegen``.
 
 User-defined Types
