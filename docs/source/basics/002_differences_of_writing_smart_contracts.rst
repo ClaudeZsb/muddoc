@@ -1,3 +1,5 @@
+.. _dev-differences:
+
 Differences of writing smart contracts
 ======================================
 
@@ -23,7 +25,7 @@ This is a simple example that stores a single number and retrieves it.
     }
   }
 
-With mud framework, you can write the same contract like this:
+With mud framework, you should write the same contract like this:
 
 .. code-block:: solidity
 
@@ -43,8 +45,15 @@ With mud framework, you can write the same contract like this:
     }
   }
 
-You might be wondering where ``StoredUint`` is declared, and how it's stored
-and read?
+First, you'll notice that ``SimpleStorageSystem``, while still a
+``contract``, additionally inherits from
+``@latticexyz/world/src/System.sol``. This is because in projects built
+with Mud, all functionalities are implemented through individual systems.
+``SimpleStorageSystem`` is also a system, providing the functionality to
+store and read a number.
+
+Secondly, you might be curious about where ``StoredUint`` is declared,
+and how it's stored and read?
 
 This is one of the important features of the Mud framework. It encapsulates
 contract states into a familiar database-like structure, allowing you to
@@ -57,7 +66,7 @@ configuration file like this:
   import { defineWorld } from "@latticexyz/world";
 
   export default defineWorld({
-    namespace: "app",
+    namespace: "muddoc",
     tables: {
       StoredUint: {
         schema:{
@@ -98,10 +107,12 @@ So, what benefits can Mud bring to data reading and writing?
 * Open and standardized data reading interfaces, making it convenient for any
   external contract to read any data from the contract.
 
+.. _dev-differences_contract_interaction:
+
 Message Call
 ------------
 
-This is a simple example that retrieves a single number from above
+This is a simple example that retrieves and updates a single number from above
 ``SimpleStorage`` contract.
 
 .. code-block:: solidity
@@ -127,13 +138,6 @@ This is a simple example that retrieves a single number from above
 
 With mud framework, you should write it like this:
 
-.. note::
-
-  ``SimpleStorageSystem`` and ``SimpleStorageCallerSystem`` are two different
-  contracts and represent two different systems in the same world. And most
-  importantly, they're not in ``root`` namespace.
-  We use different way to call a system in ``root`` namespace.
-
 .. code-block:: solidity
 
   // SPDX-License-Identifier: MIT
@@ -144,45 +148,36 @@ With mud framework, you should write it like this:
 
   contract SimpleStorageCallerSystem is System {
     function setUintToSimpleStorageSystem(uint x) public {
-      IWorld(_world()).app__setUint(x);
+      IWorld(_world()).muddoc__setUint(x);
     }
 
     function getUintFromSimpleStorageSystem() public view returns (uint) {
-      return IWorld(_world()).app__getUint();
+      return IWorld(_world()).muddoc__getUint();
     }
   }
 
-The ``IWorld`` here is an automatically generated interface that includes all
-the external interfaces of the ``System`` contracts in the entire project. When
-we place ``SimpleStorageSystem`` and ``SimpleStorageCallerSystem`` within the
-same project, we automatically obtain an interface collection containing the
-external methods of both contracts. Naturally, we can use this interface
-collection to call the ``setUint`` and ``getUint`` methods of
-``SimpleStorageSystem``.
+Here, ``SimpleStorageCallerSystem`` is also a system, a separate contract
+with a different address from ``SimpleStorageSystem``. However, unlike
+native contract interactions, ``SimpleStorageCallerSystem`` doesn't
+directly call ``SimpleStorageSystem``'s functions. Instead, it calls
+another contract address returned by ``_world()``, and the function name
+changes to ``muddoc__setUint()`` with a prefix.
 
-.. note::
+This is another important feature of the Mud framework: all system function
+entries are centralized on a contract called ``World``. It acts like a
+router, responsible for dispatching all system function calls to the
+correct systems, along with function name resolution. This is why when one
+system calls another system's function, the call is directed to the
+``World`` contract returned by ``_world()``, and the function name
+undergoes subtle changes.
 
-  ``_world()`` is an internal function introduced by ``System``, used to get
-  the project's ``World`` address. You can temporarily understand it as the
-  project's main contract, where all method entries are established. More
-  information will be covered in later chapters.
-
-From the example, we can see that after using the Mud framework, we didn't
-manually establish a relationship between the two contracts. Instead, we called
-a main contract called ``World`` to complete the reading of ``StoredUint``.
-This main contract is actually not the ``SimpleStorageSystem`` contract itself.
-
-.. note::
-
-  There are actually many differences between the ``World`` contract and the
-  ``Diamond`` contract, but we'll discuss this in detail later.
-
-If you're familiar with the Diamond protocol, it's not hard to see that the
-``World`` contract is very similar to the ``Diamond`` contract. In fact, they
-both have a centralized data storage contract, and all business logic
-``System`` or ``Facet`` contracts exist as on-chain code libraries. They don't
-actually store data, but connect with the data management contract through
-``delegateCall`` or ``call`` to perform operations on the data.
+If you're familiar with the Diamond protocol, it's not hard to guess how
+this is achieved. The ``World`` contract is very similar to the
+``Diamond`` contract. In fact, they both have a centralized data storage
+contract, and all business logic ``System`` or ``Facet`` contracts exist as
+on-chain libraries. They don't actually store data, but connect with the
+data management contract through ``delegateCall`` or ``call`` to perform
+operations on the data.
 
 Some might ask, if the ``World`` contract is similar to ``Diamond`` and all
 data is centrally stored, why not let ``SimpleStorageCallerSystem`` directly
@@ -214,7 +209,7 @@ a specific piece of data, it can be written like this:
   Even if the contract interaction logic is as simple as modifying a single
   state, it may not always be possible to directly operate on the table where
   the state resides. Mud has a strict access control mechanism. If your project
-  has only one custom namespace, such as ``app``, and all tables and systems
+  has only one custom namespace, such as ``muddoc``, and all tables and systems
   belong to it, then the above conversion is feasible. Otherwise, it still
   needs to be analyzed on a case-by-case basis.
 

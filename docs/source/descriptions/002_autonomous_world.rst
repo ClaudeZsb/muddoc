@@ -50,9 +50,9 @@ the most common method to ensure the transfer can correctly modify balances is:
 
 .. code-block::
 
-  ==> call, --> delegatecall
+  --> call, ==> delegatecall
 
-  EOA/Contracts ==> World --> ERC20System
+  EOA/Contracts --> World ==> ERC20System
 
 1. Use ``World`` as the token's address, meaning it's the entry point for all
    IERC20 method interactions.
