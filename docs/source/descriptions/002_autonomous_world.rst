@@ -1,10 +1,11 @@
 Autonomous World
 ===================
 
-Every application built with Mud is an autonomous world. Essentially, an
-autonomous world is a series of smart contracts organized under core storage
-protocol and resource usage and management protocol, forming a structured
-whole through various forms of contract interactions.
+From now on, we will refer to each application built with Mud as an autonomous
+world. Essentially, an autonomous world is a series of smart contracts
+organized under core storage protocol and resource usage and management
+protocol, forming a structured whole through various forms of contract
+interactions.
 
 **Understanding the composition and operation of autonomous worlds is key to
 flexibly using the Mud framework.**
@@ -74,7 +75,7 @@ interaction ``call`` instead of ``delegatecall``.
 1. Use ``World`` as the token's address, meaning it's the entry point for all
    IERC20 method interactions.
 2. Record in the ``World`` contract that ``address(ERC20System)`` has
-   permission to update the ``Balances`` table.
+   access to update the ``Balances`` table.
 3. Add a fallback for the ``IERC20.transfer`` function to ``World``.
 4. In the ``IERC20.transfer fallback`` implementation, call the
    ``ERC20System.transfer`` contract function using ``call``.
@@ -97,12 +98,12 @@ interaction ``call`` instead of ``delegatecall``.
 
 .. note::
 
-  The latter, compared to the former, can introduce permission control. ``World``
-  can judge whether there's permission to update specific tables based on
+  The latter, compared to the former, can introduce access control. ``World``
+  can judge whether there's access to update specific tables based on
   ``msg.sender``.
 
   The former, not departing from the ``World`` context, can modify all its own
-  ``slots``, meaning it has write permission for all tables, and cannot be
+  ``slots``, meaning it has write access to all tables, and cannot be
   restricted at the contract level.
 
 The common point of both methods is that **World serves as the unified entry
@@ -117,7 +118,7 @@ The difference between the two methods is only reflected in how ``World``
 interacts with ``System``. The resulting impact is that the former can not only
 modify the ``Balances`` table but also the ``Allowances`` table and even all
 other tables. The latter can only modify the ``Balances`` table and only allows
-addresses with permissions to make modifications. Each has its advantages and
+addresses with access to make modifications. Each has its advantages and
 disadvantages; the former is more convenient, while the latter is more secure.
 
 Mud supports both of these methods simultaneously. In an autonomous world,
@@ -125,9 +126,17 @@ Mud supports both of these methods simultaneously. In an autonomous world,
 interacting with others using the second method. The choice of interaction
 method depends entirely on the ``namespace`` of the ``System``. The
 ``namespace`` is precisely the foundation for Mud's implementation of
-permission control.
+access control.
 
-Permission Control
+.. note::
+
+   When a system belongs to a custom namespace, the ``World`` contract interacts
+   with the system contract via ``call``. When a system belongs to the ``root``
+   namespace, the ``World`` contract interacts via ``delegatecall``.
+
+   Developers can flexibly choose namespaces based on their needs.
+
+Access Control
 ------------------
 
 Imagine our ERC20 token project achieves tremendous success, and we decide to
@@ -141,7 +150,7 @@ update voting-related tables, like voting weights.
 
 This sounds simple, like being a company boss assigning employees to different
 departments based on their roles. In the office system, you'd allocate
-different file access and system usage permissions based on employee IDs or
+different file access and system access based on employee IDs or
 their departments.
 
 This is exactly what Mud does:
@@ -150,7 +159,7 @@ This is exactly what Mud does:
    ``ResourceId`` identifier.
 2. Establish a resource hierarchy, using higher-level namespaces as superior
    resources for system and table resources.
-3. Control resource access permissions at the namespace level.
+3. Control resource access at the namespace level.
 
 Resource identification is the first step in effective resource management.
 ``ResourceId`` is a ``bytes32`` data type, concatenated from three fixed-length
@@ -163,35 +172,36 @@ string, length **16**, denotes the resource name.
 
    When the resource type is ``ns``, the resource name is an empty string.
 
-Resource hierarchies enable multi-dimensional permission control. A namespace
+Resource hierarchies enable multi-dimensional access control. A namespace
 is a collection of system and table resources, also a high-level resource.
-As a resource, it's often used to perform overall operations and permission
-control.
 
-The main resource permission control rules are as follows:
+As such, an ERC20 token project with added staking and voting functions
+might look like this in an autonomous world.
 
-- All tables, regardless of namespace, have full read permissions, internally
-  for any system, externally for any address.
-- Systems within the same namespace can call each other.
-- Systems have write permissions for tables within the same namespace.
-- Any cross-namespace system calls or table writes require pre-configured
-  permissions.
-- Any external system access or table writes need pre-configured permissions.
-- Namespace owners have the highest authority over all resources within their
-  namespace.
+.. image:: ../images/aw-namespaces.png
+  :scale: 50 %
+
+The 3 tables and 1 system required to implement IERC20 are grouped under
+the ``ERC20 namespace``.
+The tables and systems needed for staking mining functionality are
+grouped under the ``Stake namespace``.
+The tables and systems required for voting functionality are grouped
+under the ``Vote namespace``.
+
+In this way, ``ERC20System`` can only update tables under the ``ERC20
+namespace``,
+``StakeSystem`` can only update ``Staking Tables``,
+``VoteSystem`` can only update ``Voting Tables``.
+However, don't worry about data barriers; systems can't update tables in
+other namespaces, but read-only access is still possible.
+This is because all tables are completely open and transparent.
 
 .. note::
 
    In an autonomous world, developers commonly use two namespaces: ``root`` and
    custom namespaces. The ``root`` namespace has default core systems like
    ``AccessManagementSystem``, providing basic functionalities such as
-   permission configuration.
-
-   When a system belongs to a custom namespace, the main contract interacts
-   with the system contract via ``call``. When a system belongs to the ``root``
-   namespace, the main contract interacts via ``delegatecall``.
-
-   Developers can flexibly choose namespaces based on their needs.
+   access configuration.
 
 .. note::
 
@@ -199,5 +209,5 @@ The main resource permission control rules are as follows:
    representing the ``Store protocol`` and ``World protocol``. These are core
    protocols maintaining the autonomous world's operation. One handles
    low-level data storage implementation, while the other manages high-level
-   resource usage and management, including resource registration and internal
-   and external permission control.
+   resource usage and management, including resource registration and access
+   control.
