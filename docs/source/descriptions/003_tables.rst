@@ -10,8 +10,9 @@ tables using automatically generated table code libraries.**
 Defining a Table
 ----------------
 
-This is a simple configuration file that defines a table named ``Users`` with
-three fields: ``addr``, ``data``, and ``description``.
+This is a simple configuration file that defines a table in ``muddoc``
+namespace, named ``Users`` with three fields: ``addr``, ``data``, and
+``description``.
 Their types are ``address``, ``uint256``, and ``string`` respectively, with the
 ``addr`` field serving as the primary key.
 
@@ -36,7 +37,8 @@ Their types are ``address``, ``uint256``, and ``string`` respectively, with the
 In the configuration file ``mud.config.ts``, each key-value pair in ``tables``
 defines a table. The key of the pair determines the table's name, while the
 value is an object containing other configuration items for the table, mainly
-including the definition of table fields and primary keys.
+including the definition of table fields and primary keys. All systems will
+be registered in the namespace named by ``namespace`` field.
 
 In the autonomous world defined by Mud, a table is a type of resource, and each
 resource is identified by a unique ``ResourceId``.
@@ -320,7 +322,7 @@ directly call the CRUD methods.
   }
 
 - ``register()``, registers the table in the autonomous world. One-time
-  operation.
+  operation. Requires owning namespace ownership.
 
   .. note::
 

@@ -89,7 +89,7 @@ In the :ref:`dev-differences` section, we implemented the
 This is the most common and frequently used approach, but it's only
 applicable when two systems meet specific conditions.
 
-- Fundamentally, the calling system must have access permission to the
+- Fundamentally, the calling system must have access to the
   called system, which applies to all system calls.
 - Secondly, the calling system must belong to a custom namespace.
 - Lastly, the called system must have registered the corresponding
@@ -101,7 +101,7 @@ applicable when two systems meet specific conditions.
     which includes all the function interfaces corresponding to the function
     selectors registered on the ``World`` contract by the systems.
 
-Assuming no permission issues, the namespace of the calling system, the
+Assuming no access issues, the namespace of the calling system, the
 namespace of the called system, and the registration status of the called
 system's function all affect how we implement inter-system calls.
 
@@ -212,10 +212,10 @@ when the called contract uses ``msg.sender`` as a parameter.
   Suppose ``SystemX`` can deposit some USDT into an on-chain DeFi mining pool
   that relies on ``msg.sender`` as the source of funds, and implements a
   corresponding method to withdraw the deposited USDT from the pool. Then anyone
-  could reuse this system to withdraw these deposited USDT. Even if permission
+  could reuse this system to withdraw these deposited USDT. Even if access
   control is added to the asset withdrawal method implementation, it cannot
   prevent this behavior. This is because, by default, the data storage that
-  system contracts rely on for permission control is stored in ``World``, and
+  system contracts rely on for access control is stored in ``World``, and
   who is using ``SystemX`` determines which contract is the ``World``. When your
   autonomous world is using this system contract, it reads data from your
   ``World`` contract. When an attacker's autonomous world is using ``SystemX``,
@@ -239,8 +239,9 @@ Systems need to be registered in any ``World`` contract before they can be
 used. System registration consists of two parts: registering the system
 contract and registering system functions.
 
-Registering the system contract allows the ``World`` contract to recognize and
-use a system contract. The purpose of registering system functions is to add a
+The purpose of registering a system contract is to determine the namespace in
+which the system is located.
+The purpose of registering system functions is to add a
 specified function selector as a fallback function in the ``World`` contract.
 Subsequently, the registered function selector can be used to call the
 ``World`` contract, and the ``World`` contract will automatically forward the
@@ -280,7 +281,7 @@ Registration through Configuration Files
 
 This is a configuration file for systems applicable to
 ``SimpleStorageCallerSystem`` and ``SimpleStorageSystem`` in
-:ref:`dev-differences`.
+:ref:`dev-differences`. They are both in the ``muddoc`` namespace.
 
 Let's look at the meaning of each system configuration item:
 
