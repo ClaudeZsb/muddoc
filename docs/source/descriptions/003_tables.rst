@@ -1,8 +1,8 @@
 Tables
 ======
 
-**Any data that needs to be stored in the contract state must be implemented
-through tables.**
+**In autonomous worlds, any data that requires persistent storage based
+on contract state is implemented through tables.**
 
 **Define and create tables through configuration files, and manipulate
 tables using automatically generated table code libraries.**

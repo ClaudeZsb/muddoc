@@ -18,7 +18,7 @@ For smart contract developers
 
 .. important::
 
-  If your dapp doesn't require comlexe logic or elaborate data storage, then
+  If your dapp doesn't require complexe logic or elaborate data storage, then
   implementing it with native ``Solidity`` would be the best choice. For
   example, a single fungible token ``ERC20`` .
 
