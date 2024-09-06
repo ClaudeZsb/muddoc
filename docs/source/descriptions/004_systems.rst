@@ -277,6 +277,7 @@ Registration through Configuration Files
       //   },
       // },
     },
+    // excludeSystems: ["SimpleStorageSystem"],
     tables: {...},
   });
 
@@ -317,6 +318,8 @@ Let's look at the meaning of each system configuration item:
       When the system is in a custom namespace, the registered function
       selector's function name will be prefixed with the namespace name.
       For example, ``IWorld(_world()).muddoc__getUint()``.
+- ``excludeSystems``: ``string[]``, default: empty array. Disabled systems.
+  Disabled systems are treated as if they don't exist at all.
 
 ``Mud CLI`` automatically completes the deployment of all systems in the
 project and registers them to the newly deployed ``World`` contract based on
