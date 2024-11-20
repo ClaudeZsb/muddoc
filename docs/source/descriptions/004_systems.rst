@@ -240,13 +240,33 @@ Systems need to be registered in any ``World`` contract before they can be
 used. System registration consists of two parts: registering the system
 contract and registering system functions.
 
-The purpose of registering a system contract is to determine the namespace in
-which the system is located.
-The purpose of registering system functions is to add a
-specified function selector as a fallback function in the ``World`` contract.
+Through registration, the system contract is recorded as a resource in the
+specified namespace of the autonomous world and can be called using
+``IWorld.call()``.
+The purpose of registering system functions is to add a specified function
+selector as a fallback function in the ``World`` contract.
 Subsequently, the registered function selector can be used to call the
 ``World`` contract, and the ``World`` contract will automatically forward the
 call to the corresponding system contract.
+
+.. note::
+  Function selectors registered on the ``World`` contract must be globally
+  unique. There are differences in how non-root systems and root systems
+  register system functions.
+
+  When registering system functions for non-root systems, the global function
+  selector uses the namespace name as a prefix, connected with ``__`` to the
+  system function name.
+
+  When registering system functions for root systems, the function selector
+  can be arbitrarily specified.
+
+.. note::
+
+  Although a system contract only needs to be registered to be used, each call
+  requires carrying the resource ID of the system being called. For more
+  convenient system calls, system functions can be registered with globally
+  unique function selectors.
 
 Registration through Configuration Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -489,12 +509,4 @@ selectors registered by the system.
 Core Systems
 --------------
 
-todo
-
-- ``AccessManagementSystem``
-- ``BalanceTransferSystem``
-- ``BatchCallSystem``
-- ``ModuleInstallationSystem``
-- ``StoreRegistrationSystem``
-- ``WorldRegistrationSystem``
-
+More details about core systems can be found in :ref:`internals_core_systems`.
