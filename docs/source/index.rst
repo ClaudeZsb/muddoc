@@ -41,3 +41,9 @@ Contents
    :glob:
 
    cli/*
+
+.. toctree::
+   :caption: Appendix
+   :glob:
+
+   appendix/*
